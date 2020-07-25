@@ -10,11 +10,17 @@ import UIKit
     
 struct Article: Codable {
     var title: String
+    var created_time: String?
     var user: User
     struct User: Codable {
-        var location: String //元々idだったけど、nameでもできた。
-                             //QiitaAPIのユーザのところにあるパラメータなら使える？APIごとにパラメータが違うっていうのはこういうこと？
-                             //locationとかorganizationはThe data couldn’t be read because it is missing.が出た.
+        var items_count: Int  /*元々idだったけど、nameでもできた。
+                                QiitaAPIのユーザのところにあるパラメータなら使える？APIごとにパラメータが違u
+                                っていうのはこういうこと？
+                                locationとかorganizationはThe data couldn’t be read because it is
+                                missing.が出た.
+                                →オプショナル型にしたらできる。locationやorganizationは未登録の場合があ
+                                るから。サーバ側が違う言語だとこう言ったところに一層気を遣う必要あり。*/
+        
         
     }
 }
@@ -24,26 +30,33 @@ struct Qiita {
     static func fetchArticle(completion: @escaping ([Article]) -> Swift.Void) {
 
         let url = "https://qiita.com/api/v2/items"
-
+        
+        //URLComponentsは上のurlをパースしてる
         guard var urlComponents = URLComponents(string: url) else {
-            return
+            return //URLComponentsがnilだったらreturn
         }
 
         urlComponents.queryItems = [
             URLQueryItem(name: "per_page", value: "50"),
+            //なんか抽出条件決めてそう。
         ]
-
+        //よく分からんけどどのサイト見てもこんな文記述されてるからよく使うやつ？
         let task = URLSession.shared.dataTask(with: urlComponents.url!) { data, response, error in
 
             guard let jsonData = data else {
-                return
+                return //dataがnilだったらreturn
             }
 
             do {
+                //try以下はエラーを吐く可能性のあるメソッドを呼び出し？
+                //JSONのデータをデコード？
+                //decodeはfunc
                 let articles = try JSONDecoder().decode([Article].self, from: jsonData)
                 completion(articles)
             } catch {
+                //エラー発生時の処理
                 print(error.localizedDescription)
+                //locationとかをString?にしてなかった時にコンソールに出てたエラー文とかを呼び出してる
             }
         }
         task.resume()
@@ -82,7 +95,10 @@ extension ViewController: UITableViewDataSource {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
         let article = articles[indexPath.row]
         cell.textLabel?.text = article.title
-        cell.detailTextLabel?.text = article.user.location
+        //cell.detailTextLabel?.text = article.user.items_count as? String
+        cell.detailTextLabel?.text = article.created_time
+        //items_countはIntで定義されているけど、textにはStringしか入れられないから、Intのままでitems_countは入れれない。castしてみたけどだめっぽいのはなぜ？
+        
         return cell
     }
 
