@@ -67,6 +67,8 @@ struct Qiita {
 class ViewController: UIViewController {
 
     private var tableView = UITableView()
+    //遷移先のViewController
+    var secondViewController = UIViewController()
     fileprivate var articles: [Article] = []
 
     override func viewDidLoad() {
@@ -76,6 +78,7 @@ class ViewController: UIViewController {
         setUpTableView: do { //これない
             tableView.frame = view.frame
             tableView.dataSource = self
+            tableView.delegate = self
             view.addSubview(tableView)
         }
 
@@ -92,8 +95,11 @@ extension ViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
+        
+        //reuseIdentiferどこでも決めてないのになんで使える？
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
         let article = articles[indexPath.row]
+        //そういやなんでこれ勝手に１行ずつ繰り返して入れてくれるの？
         cell.textLabel?.text = article.title
         //cell.detailTextLabel?.text = article.user.items_count as? String
         cell.detailTextLabel?.text = article.created_time
@@ -103,11 +109,24 @@ extension ViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        print(articles.count)// 50だから上で指定した分だけ
         return articles.count
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return "最新記事"
+    }
+}
+
+/*これが呼び出されないから、タップしたときの処理がされない。
+->tableView.delegete = self忘れてたから */
+extension ViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("tapped")
+        //やっぱりあまりsegueは使いたくない。
+        /*segueにidentiferつけることはできるけど、SecondViewControllerを表示させるにはどうしたらいいんだろー
+        ->storyboardのクラスのところ設定したらいけたぽい？storyboard使わない時はどうするんだろね*/
+        self.performSegue(withIdentifier: "toSecond", sender: nil)
     }
 }
 
