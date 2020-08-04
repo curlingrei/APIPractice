@@ -7,10 +7,15 @@
 //
 
 import UIKit
+//本文入れとく用 本当にひどい
+var body: [String] = ["","","","","","",""]
+//タイトルと本文の対応用
+var bodyNum: Int = 0
     
 struct Article: Codable {
     var title: String
     var created_time: String?
+    var body: String
     var user: User
     struct User: Codable {
         var items_count: Int  /*元々idだったけど、nameでもできた。
@@ -37,7 +42,7 @@ struct Qiita {
         }
 
         urlComponents.queryItems = [
-            URLQueryItem(name: "per_page", value: "50"),
+            URLQueryItem(name: "per_page", value: "5"),
             //なんか抽出条件決めてそう。
         ]
         //よく分からんけどどのサイト見てもこんな文記述されてるからよく使うやつ？
@@ -67,12 +72,12 @@ struct Qiita {
 class ViewController: UIViewController {
 
     private var tableView = UITableView()
-    //遷移先のViewController
-    var secondViewController = UIViewController()
+
     fileprivate var articles: [Article] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        //ここのタイトルがナビゲーションアイテムのタイトルになった。なんで？
         self.title = "最新記事" //これじゃタイトル表示されない。下のtableViewTitle...との違いは？
 
         setUpTableView: do { //これない
@@ -82,12 +87,14 @@ class ViewController: UIViewController {
             view.addSubview(tableView)
         }
 
+        //secondの方でもこれをやればbody持ってこれるのかな？
         Qiita.fetchArticle(completion: { (articles) in
             self.articles = articles
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
         })
+        
     }
 }
 
@@ -95,15 +102,15 @@ extension ViewController: UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-        
         //reuseIdentiferどこでも決めてないのになんで使える？
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
         let article = articles[indexPath.row]
         //そういやなんでこれ勝手に１行ずつ繰り返して入れてくれるの？
         cell.textLabel?.text = article.title
         //cell.detailTextLabel?.text = article.user.items_count as? String
-        cell.detailTextLabel?.text = article.created_time
         //items_countはIntで定義されているけど、textにはStringしか入れられないから、Intのままでitems_countは入れれない。castしてみたけどだめっぽいのはなぜ？
+        //表示されているタイトルを持っている本文を入れておく
+        body[indexPath.row] = article.body
         
         return cell
     }
@@ -127,6 +134,11 @@ extension ViewController: UITableViewDelegate {
         /*segueにidentiferつけることはできるけど、SecondViewControllerを表示させるにはどうしたらいいんだろー
         ->storyboardのクラスのところ設定したらいけたぽい？storyboard使わない時はどうするんだろね*/
         self.performSegue(withIdentifier: "toSecond", sender: nil)
+        tableView.deselectRow(at: indexPath, animated: true)
+        //タイトルと本文の対応
+        bodyNum = indexPath.row
     }
 }
 
+
+//viewControllerの方で、idを取得してそれをsecondの方に渡す？これがいわゆる値渡し？

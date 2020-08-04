@@ -10,13 +10,26 @@ import UIKit
 
 class SecondViewController: UIViewController {
     let sampleLabel = UILabel()
+    let QiitaBody = UITextView()
     override func viewDidLoad() {
         super.viewDidLoad()
-        sampleLabel.text = "Hello World"
-        view.backgroundColor = .blue//これは表示される
-        view.addSubview(sampleLabel) //これは表示されない なぜだー
+        QiitaBody.text = body[bodyNum]
+        view.addSubview(QiitaBody)
+        QiitaBody.frame = view.frame
+        /*view.backgroundColor = .blue//これは表示される
+        /view.addSubview(sampleLabel) //これは表示されない なぜだー ->画面外に行ってたみたい
+        
+        view.bringSubviewToFront(sampleLabel)
+        /*frameとboundsの使い分け frameはsuperviewを起点？この場合のsuperviewって何？
+         view.ってやったらviewの親が呼ばれる？それともsampleLabelに代入してるからsampleLabelのsuperviewが呼ばれる？sampleLabelの親はviewcontroller?
+         */
+        sampleLabel.frame = view.frame(forAlignmentRect: CGRect(x: view.bounds.width/20 , y: view.bounds.height/10, width: view.bounds.width, height: view.bounds.height))
+        sampleLabel.backgroundColor = .yellow
+        sampleLabel.frame = view.bounds */
 
         // Do any additional setup after loading the view.
+        
+     
     }
     
 
